@@ -64,32 +64,20 @@ class MeterReadingController extends Controller
         return redirect()->route('electricity-graph')->with('success', 'Meter reading updated successfully.');
     }
 
-    public function showElectricityGraph()
+    public function getTotalReading($meter_name)
     {
         $currentMonth = Carbon::now()->startOfMonth();
 
-        $meter1Readings = MeterReading::where('meter_name', 'meter1')
+        $meterReadings = MeterReading::where('meter_name', $meter_name)
             ->whereDate('created_at', '>=', $currentMonth)
             ->orderBy('created_at')
             ->get();
 
-        $meter2Readings = MeterReading::where('meter_name', 'meter2')
-            ->whereDate('created_at', '>=', $currentMonth)
-            ->orderBy('created_at')
-            ->get();
+        $lastBilledReadingMeter = LastBilledReading::where('meter_name', $meter_name)->value('reading_value');
 
-        $lastBilledReadingMeter1 = LastBilledReading::where('meter_name', 'meter1')->value('reading_value');
-        $lastBilledReadingMeter2 = LastBilledReading::where('meter_name', 'meter2')->value('reading_value');
-
-        $meter1Data = $this->calculateDailyUsage($meter1Readings, $lastBilledReadingMeter1);
-        $meter2Data = $this->calculateDailyUsage($meter2Readings, $lastBilledReadingMeter2);
-
-        $totalMeter1 = array_sum(array_column($meter1Data, 'usage'));
-        $totalMeter2 = array_sum(array_column($meter2Data, 'usage'));
-
-        return view('electricity_graph', compact(
-            'meter1Data', 'meter2Data', 'totalMeter1', 'totalMeter2'
-        ));
+        $meterData = $this->calculateDailyUsage($meterReadings, $lastBilledReadingMeter);
+      
+        return array_sum(array_column($meterData, 'usage'));
     }
 
     private function calculateDailyUsage($readings, $lastBilledReading)
@@ -115,24 +103,14 @@ class MeterReadingController extends Controller
     public function getMeterReadings($meterName)
     {
        $currentDate = Carbon::now();
-
-        // Get the first day of the current month
-        $firstDayOfCurrentMonth = $currentDate->copy()->startOfMonth();
-
-        // Get the 27th of the previous month
-        $previousMonth = Carbon::now()->subMonths(1);
-
-        $twentySeventhOfPreviousMonth = $previousMonth->copy()->day(27);
-
+       $total_reading = $this->getTotalReading();
+       dd($total_reading );
         // Get all readings from 27th of previous month and current month
-        $readings = MeterReading::where('meter_name', $meterName)
-            ->where(function ($query) use ($twentySeventhOfPreviousMonth, $firstDayOfCurrentMonth) {
-                $query->where('created_at', '>', $twentySeventhOfPreviousMonth)
-                    ->orWhere('created_at', '>=', $firstDayOfCurrentMonth);
-            })
-            ->orderBy('created_at')
-            ->get()
-            ->toArray();
+        $readings = MeterReading::where('meter_name', $meterName) 
+        ->latest()
+        ->take(30) // Limit to 30 entries
+        ->get()
+        ->toArray(); // Convert to array if needed
 
         $data = [];
         $previousValue = null;
@@ -147,6 +125,8 @@ class MeterReadingController extends Controller
             ];
             $previousValue = $reading['reading_value'];
         }
+
+
 
         return response()->json($data);
     }

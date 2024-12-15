@@ -81,8 +81,8 @@ Route::get('/download-images', function () {
 
  Route::get('/graph', [MeterReadingController::class, 'showElectricityGraph'])->name('electricity-graph');
 
-Route::get('/last-billed-reading', [MeterReadingController::class, 'showLastBilledReadingForm'])->name('last-billed-reading-form');
-Route::post('/last-billed-reading', [MeterReadingController::class, 'storeLastBilledReading'])->name('store-last-billed-reading');
+Route::get('/set-reading', [MeterReadingController::class, 'showLastBilledReadingForm'])->name('last-billed-reading-form');
+Route::post('/set-reading', [MeterReadingController::class, 'storeLastBilledReading'])->name('store-last-billed-reading');
 
 Route::get('/meter-reading', [MeterReadingController::class, 'showMeterReadingForm'])->name('meter-reading-form');
 Route::post('/meter-reading', [MeterReadingController::class, 'storeMeterReading'])->name('store-meter-reading');
