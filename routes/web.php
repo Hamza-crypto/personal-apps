@@ -21,12 +21,9 @@ use App\Http\Controllers\MeterReadingController;
 |
 */
 
-Route::get('test-server', function () {
-    dump('Correct Server');
-});
+Route::view('/', 'home');
 
-
-Route::get('migrate_fresh', function () {
+Route::get('migrate/fresh', function () {
     Artisan::call('migrate:fresh');
     dump('Database Reset Successfully');
 });
@@ -54,7 +51,6 @@ Route::get('storage-link', function () {
 });
 
 
-
 require __DIR__.'/auth.php';
 
 Route::get('/send-test-email', function () {
@@ -67,13 +63,6 @@ Route::get('/send-test-email', function () {
 
     return 'Email Sent!';
 });
-
-Route::get('/download-images', function () {
-
-    Artisan::call('images:download');
-
-});
-
 
 /**
  * Meter Reading
@@ -93,5 +82,5 @@ Route::delete('/meter-readings/{id}', [MeterReadingController::class, 'destroy']
 
 Route::get('/send_reading', function () {
     Artisan::call('send-meter-reading');
-
 });
+

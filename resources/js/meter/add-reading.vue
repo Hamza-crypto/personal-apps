@@ -3,9 +3,10 @@
     <div class="mb-3">
       <label for="meter_name" class="form-label">Meter Name:</label>
       <select v-model="meter_name" id="meter_name" class="form-select" required>
-        <option value="meter1">Meter 1</option>
-        <option value="meter2">Meter 2</option>
-      </select>
+          <option v-for="(stat, index) in stats" :key="index" :value="stat.meter_name">
+            {{ stat.label }}
+          </option>
+        </select>
     </div>
     <div class="mb-3">
       <label for="reading_value" class="form-label">Reading Value:</label>
@@ -17,11 +18,12 @@
 
 <script>
 import axios from "axios";
+
 export default {
   data() {
     return {
-      meter_name: "meter1",
-      reading_value: "meter1",
+      meter_name: "",
+      reading_value: "",
     };
   },
   methods: {
@@ -50,5 +52,12 @@ export default {
       }
     },
   },
+
+  computed: {
+    stats() {
+      return this.$store.state.stats;
+    }
+  }
 };
 </script>
+

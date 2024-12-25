@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     stats() {
-      return this.$store.state.stats; // Access stats from the Vuex store
+      return this.$store.state.stats;
     },
   },
   methods: {
@@ -49,7 +49,6 @@ export default {
         
 
         this.$store.dispatch('updateSharedData', response.data.data); // Dispatch Vuex action to update stats
-
 
         console.log(this.stats);
       } catch (error) {
