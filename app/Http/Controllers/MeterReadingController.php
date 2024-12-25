@@ -37,8 +37,8 @@ class MeterReadingController extends Controller
     public function storeMeterReading(Request $request)
     {
         $validated = $request->validate([
-        'meter_name' => 'required|string|in:meter1,meter2',
-        'reading_value' => 'required|numeric',
+            'meter_name' => 'required|string|in:meter1,meter2',
+            'reading_value' => 'required|numeric',
         ]);
 
         $today = Carbon::now()->startOfDay();
@@ -76,8 +76,8 @@ class MeterReadingController extends Controller
     //         ->take(10)
     //         ->get();
 
-        
-        
+
+
     //     $meterData = $this->calculateDailyUsage($meterReading, $lastMonthReading);
 
     //     return array_sum(array_column($meterData, 'usage'));
@@ -105,17 +105,17 @@ class MeterReadingController extends Controller
 
     public function getMeterReadings($meterName)
     {
-       $last_month_reading = $this->getLastMonthReading($meterName);
-       $recent_reading = MeterReading::where('meter_name', $meterName)->first();
+        $last_month_reading = $this->getLastMonthReading($meterName);
+        $recent_reading = MeterReading::where('meter_name', $meterName)->first();
 
         $final_reading = $recent_reading->reading_value - $last_month_reading;
         return $final_reading;
         // Get all readings from 27th of previous month and current month
-        $readings = MeterReading::where('meter_name', $meterName) 
-        ->latest()
-        ->take(10) // Limit to 30 entries
-        ->get()
-        ->toArray(); // Convert to array if needed
+        $readings = MeterReading::where('meter_name', $meterName)
+            ->latest()
+            ->take(10) // Limit to 30 entries
+            ->get()
+            ->toArray(); // Convert to array if needed
 
         $data = [];
         $previousValue = null;
@@ -137,28 +137,54 @@ class MeterReadingController extends Controller
     }
 
 
-    public function update(Request $request, $id) 
-{
-    // Validate the request data
-    $request->validate([
-        'reading_value' => 'required|numeric',
-    ]);
+    public function update(Request $request, $id)
+    {
+        // Validate the request data
+        $request->validate([
+            'reading_value' => 'required|numeric',
+        ]);
 
-    // Find the meter reading by meter_name (or $id if that's the primary key)
-    $meterReading = MeterReading::where('meter_name', $id)->firstOrFail();
+        // Find the meter reading by meter_name (or $id if that's the primary key)
+        $meterReading = MeterReading::where('meter_name', $id)->firstOrFail();
 
-    // Update the meter reading
-    $meterReading->update([
-        'reading_value' => $request->input('reading_value'),
-    ]);
+        // Update the meter reading
+        $meterReading->update([
+            'reading_value' => $request->input('reading_value'),
+        ]);
 
-    // Return a success response
-    return response()->json(['success' => true, 'message' => 'Meter reading updated successfully!']);
-}
+        // Return a success response
+        return response()->json(['success' => true, 'message' => 'Meter reading updated successfully!']);
+    }
+
     public function destroy($id)
     {
         $reading = MeterReading::findOrFail($id);
         $reading->delete();
         return redirect()->back()->with('success', 'Meter reading deleted successfully.');
+    }
+
+
+    public function stats()
+    {
+        $meters = LastBilledReading::getMeters();
+        $data = [];
+        foreach ($meters as $key => $name) {
+
+            $last_month_reading = $this->getLastMonthReading($key);
+            $recent_reading = MeterReading::where('meter_name', $key)->latest()->first();
+
+            $final_reading = $recent_reading->reading_value - $last_month_reading;
+
+            $data[] = [
+                'meter_name' => $key,
+                'label' => $name,
+                'reading' => $final_reading,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
     }
 }
