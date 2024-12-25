@@ -11,7 +11,7 @@ class MeterReadingController extends Controller
 {
     public function showLastBilledReadingForm()
     {
-        return view('settings.set_last_billed_reading');
+        return view('meter_readings.set_reading');
     }
 
     public function storeLastBilledReading(Request $request)
@@ -64,21 +64,24 @@ class MeterReadingController extends Controller
         return redirect()->route('electricity-graph')->with('success', 'Meter reading updated successfully.');
     }
 
-    public function getTotalReading($meter_name)
+    public function getLastMonthReading($meter_name)
     {
-        $currentMonth = Carbon::now()->startOfMonth();
-
-        $meterReadings = MeterReading::where('meter_name', $meter_name)
-            ->whereDate('created_at', '>=', $currentMonth)
-            ->orderBy('created_at')
-            ->get();
-
-        $lastBilledReadingMeter = LastBilledReading::where('meter_name', $meter_name)->value('reading_value');
-
-        $meterData = $this->calculateDailyUsage($meterReadings, $lastBilledReadingMeter);
-      
-        return array_sum(array_column($meterData, 'usage'));
+        return LastBilledReading::where('meter_name', $meter_name)->value('reading_value');
     }
+
+    // public function getTotalReading($meter_name)
+    // {
+    //     $meterReading = MeterReading::where('meter_name', $meter_name)
+    //         ->orderBy('created_at', 'desc')
+    //         ->take(10)
+    //         ->get();
+
+        
+        
+    //     $meterData = $this->calculateDailyUsage($meterReading, $lastMonthReading);
+
+    //     return array_sum(array_column($meterData, 'usage'));
+    // }
 
     private function calculateDailyUsage($readings, $lastBilledReading)
     {
@@ -102,13 +105,15 @@ class MeterReadingController extends Controller
 
     public function getMeterReadings($meterName)
     {
-       $currentDate = Carbon::now();
-       $total_reading = $this->getTotalReading();
-       dd($total_reading );
+       $last_month_reading = $this->getLastMonthReading($meterName);
+       $recent_reading = MeterReading::where('meter_name', $meterName)->first();
+
+        $final_reading = $recent_reading->reading_value - $last_month_reading;
+        return $final_reading;
         // Get all readings from 27th of previous month and current month
         $readings = MeterReading::where('meter_name', $meterName) 
         ->latest()
-        ->take(30) // Limit to 30 entries
+        ->take(10) // Limit to 30 entries
         ->get()
         ->toArray(); // Convert to array if needed
 
@@ -132,19 +137,24 @@ class MeterReadingController extends Controller
     }
 
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'reading_value' => 'required|numeric',
-        ]);
+    public function update(Request $request, $id) 
+{
+    // Validate the request data
+    $request->validate([
+        'reading_value' => 'required|numeric',
+    ]);
 
-        $meterReading = MeterReading::findOrFail($id);
-        $meterReading->update([
-            'reading_value' => $request->input('reading_value'),
-        ]);
+    // Find the meter reading by meter_name (or $id if that's the primary key)
+    $meterReading = MeterReading::where('meter_name', $id)->firstOrFail();
 
-        return response()->json(['success' => true]);
-    }
+    // Update the meter reading
+    $meterReading->update([
+        'reading_value' => $request->input('reading_value'),
+    ]);
+
+    // Return a success response
+    return response()->json(['success' => true, 'message' => 'Meter reading updated successfully!']);
+}
     public function destroy($id)
     {
         $reading = MeterReading::findOrFail($id);
