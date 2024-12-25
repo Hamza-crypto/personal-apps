@@ -20,10 +20,14 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        LastBilledReading::factory([
-            'reading_value' => 1000
-        ])->count(2)->create();
+        $names = LastBilledReading::getMeters();
+        foreach ($names as $key => $name) {
+            LastBilledReading::factory([
+                'meter_name' => $key
+            ])->create();
+        }
 
+    
         $this->call(MeterReadingSeeder::class);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+use App\Models\LastBilledReading;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ class MeterReadingSeeder extends Seeder
         // Define variables for customization
         $startDate = '2024-07-01';
         $numberOfDays = 30; // Adjust as needed
-        $meterNames = ['meter1', 'meter2']; // Adjust as needed
+        $meterNames = LastBilledReading::getMeters();
 
         $meterReadings = [];
 
@@ -23,13 +24,13 @@ class MeterReadingSeeder extends Seeder
 $currentDate = Carbon::parse($startDate)->startOfDay();
 
 for ($i = 0; $i < $numberOfDays; $i++) {
-    foreach ($meterNames as $meterName) {
+    foreach ($meterNames as $key => $meterName) {
         // Generate a unique timestamp for each meter reading
         $uniqueTimestamp = $currentDate->copy()->addSeconds(rand(1, 59)); // Add random seconds to ensure uniqueness
 
         $readingValue += rand(5, 20); // Random reading value for demonstration
         $meterReadings[] = [
-            'meter_name' => $meterName,
+            'meter_name' => $key,
             'reading_value' => $readingValue,
             'created_at' => $uniqueTimestamp,
             'updated_at' => Carbon::now(),

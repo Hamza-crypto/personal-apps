@@ -12,7 +12,6 @@ class LastBilledReadingFactory extends Factory
     public function definition()
     {
         return [
-            'meter_name' => $this->faker->randomElement(['meter1', 'meter2']),
             'reading_value' => $this->faker->numberBetween(1000, 2000),
         ];
     }
