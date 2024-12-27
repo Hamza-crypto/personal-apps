@@ -168,7 +168,11 @@ class MeterReadingController extends Controller
             $last_month_reading = $this->getLastMonthReading($key);
             $recent_reading = MeterReading::where('meter_name', $key)->latest()->first();
 
-            $final_reading = $recent_reading->reading_value ?? 0 - $last_month_reading;
+            if ($recent_reading) {
+                $final_reading = $recent_reading->reading_value - $last_month_reading;
+            } else {
+                $final_reading = 0;
+            }
 
             $data[] = [
                 'meter_name' => $key,
