@@ -134,20 +134,25 @@ class MeterReadingController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate the request data
         $request->validate([
             'reading_value' => 'required|numeric',
         ]);
 
-        // Find the meter reading by meter_name (or $id if that's the primary key)
         $meterReading = MeterReading::where('meter_name', $id)->latest()->first();
 
-        // Update the meter reading
+        $data = [
+            'reading_value' => $request->input('reading_value'),
+        ];
+
+        if (!$meterReading) {
+            MeterReading::create($data + ['meter_name'=> $id]);
+            return response()->json(['success' => true, 'message' => 'Meter reading updated successfully!']);
+        }
+
         $meterReading->update([
             'reading_value' => $request->input('reading_value'),
         ]);
 
-        // Return a success response
         return response()->json(['success' => true, 'message' => 'Meter reading updated successfully!']);
     }
 
