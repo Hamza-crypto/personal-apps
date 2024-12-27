@@ -14,19 +14,14 @@ class MeterReadingController extends Controller
         return view('meter_readings.set_reading');
     }
 
-    public function storeLastBilledReading(Request $request)
+    public function storeLastBilledReading(Request $request, $id)
     {
-        $validated = $request->validate([
-            'meter_name' => 'required|string|in:meter1,meter2',
-            'reading_value' => 'required|numeric',
-        ]);
-
         LastBilledReading::updateOrCreate(
-            ['meter_name' => $validated['meter_name']],
-            ['reading_value' => $validated['reading_value']]
+            ['meter_name' => $id],
+            ['reading_value' => $request->input('reading_value')]
         );
 
-        return redirect()->route('last-billed-reading-form')->with('success', 'Last billed reading updated successfully.');
+        return response()->json(['success' => true, 'message' => 'Last billed reading updated successfully.']);
     }
 
     public function showMeterReadingForm()
@@ -145,7 +140,7 @@ class MeterReadingController extends Controller
         ]);
 
         // Find the meter reading by meter_name (or $id if that's the primary key)
-        $meterReading = MeterReading::where('meter_name', $id)->firstOrFail();
+        $meterReading = MeterReading::where('meter_name', $id)->latest()->first();
 
         // Update the meter reading
         $meterReading->update([
@@ -166,14 +161,14 @@ class MeterReadingController extends Controller
 
     public function stats()
     {
-        $meters = LastBilledReading::getMeters();
+        $all_meters = LastBilledReading::getMeters();
         $data = [];
-        foreach ($meters as $key => $name) {
+        foreach ($all_meters as $key => $name) {
 
             $last_month_reading = $this->getLastMonthReading($key);
             $recent_reading = MeterReading::where('meter_name', $key)->latest()->first();
 
-            $final_reading = $recent_reading->reading_value - $last_month_reading;
+            $final_reading = $recent_reading->reading_value ?? 0 - $last_month_reading;
 
             $data[] = [
                 'meter_name' => $key,

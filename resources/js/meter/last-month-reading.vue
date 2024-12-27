@@ -1,25 +1,24 @@
 <template>
   <div>
-    <h1 class="text-center">Meter Reading Form</h1>
-  <form @submit.prevent="submitForm" class="mb-5">
-    <div class="mb-3">
-      <label for="meter_name" class="form-label">Meter Name:</label>
-      <select v-model="meter_name" id="meter_name" class="form-select" required>
+    <h1 class="text-center">Set Last Month Reading</h1>
+    <form @submit.prevent="submitLastMonthReadingForm" class="mb-5">
+      <div class="mb-3">
+        <label for="meter_name" class="form-label">Meter Name:</label>
+        <select v-model="meter_name" id="meter_name" class="form-select" required>
           <option v-for="(stat, index) in stats" :key="index" :value="stat.meter_name">
             {{ stat.label }}
           </option>
         </select>
-    </div>
-    <div class="mb-3">
-      <label for="reading_value" class="form-label">Reading Value:</label>
-      <input type="number" v-model="reading_value" id="reading_value" class="form-control" required />
-    </div>
-    <div class="d-grid">
-        <button type="submit" class="btn btn-primary">Submit</button>
       </div>
-  </form>
+      <div class="mb-3">
+        <label class="form-label">Reading Value:</label>
+      <input type="number" v-model="reading_value" class="form-control" required />
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Submit</button>
+      </div>
+    </form>
   </div>
- 
 </template>
 
 <script>
@@ -33,20 +32,18 @@ export default {
     };
   },
   methods: {
-    async submitForm() {
+    async submitLastMonthReadingForm() {
       try {
         const data = {
           reading_value: this.reading_value,
         };
-        // Post the form data to the Laravel backend
         const response = await axios.put(
-          `/meter-readings/${this.meter_name}`,
+          `/set-reading/${this.meter_name}`,
           data
         );
 
         console.log(response.data);
         this.$swal(response.data.message);
-        // Reset the form
         this.reading_value = "";
       } catch (error) {
         console.error("Error submitting meter reading:", error);
@@ -65,4 +62,3 @@ export default {
   }
 };
 </script>
-

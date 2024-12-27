@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
                 'meter_name' => $key
             ])->create();
         }
-
     
         $this->call(MeterReadingSeeder::class);
     }

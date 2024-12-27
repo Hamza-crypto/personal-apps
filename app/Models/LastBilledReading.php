@@ -14,6 +14,8 @@ class LastBilledReading extends Model
     protected static $meters = [
         'rasheed' => 'Abdul Rasheed',
         'faizan' => 'Faizan',
+        'siddique' => 'M Siddique',
+        'gas' => 'Gas',
     ];
     
     public static function getMeters()
